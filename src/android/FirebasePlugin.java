@@ -183,19 +183,22 @@ public class FirebasePlugin extends CordovaPlugin {
             PluginResult pluginresult = new PluginResult(PluginResult.Status.OK, json);
             pluginresult.setKeepCallback(true);
             callbackContext.sendPluginResult(pluginresult);
+
         }
     }
 
     public static void sendNotification(Bundle bundle) {
-        if(FirebasePlugin.notificationCallbackContext == null) {
+        final CallbackContext callbackContext = null;
+        if(FirebasePlugin.notificationCallbackContext == null || (callbackContext = FirebasePlugin.notificationCallbackContext.get()) == null) {
             //No callback for notification, add to cache...
+            Log.d(TAG, "Send `CallbackContext` is null, adding notification to cache");
             if(FirebasePlugin.pendingNotifications == null){
                 FirebasePlugin.pendingNotifications = new ArrayList<Bundle>();
-            }
+            }            
             pendingNotifications.add(bundle);
             return;
         }
-        final CallbackContext callbackContext = FirebasePlugin.notificationCallbackContext.get();
+        
         if (callbackContext != null && bundle != null) {
             JSONObject json = new JSONObject();
             Set<String> keys = bundle.keySet();
@@ -229,6 +232,7 @@ public class FirebasePlugin extends CordovaPlugin {
     @Override
     public void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
+        Log.d(TAG, "FirebasePlugin NewIntent");
         this.IsAppInForegound = true;
         FirebasePlugin.sendNotification(intent.getExtras());
 
@@ -531,11 +535,13 @@ public class FirebasePlugin extends CordovaPlugin {
     @Override
     public void onPause(boolean multitasking) {
         super.onPause(multitasking);
+        Log.d(TAG, "FirebasePlugin Pause");
         this.IsAppInForegound = false;
     }
     @Override
     public void onResume(boolean multitasking) {
         super.onResume(multitasking);
+        Log.d(TAG, "FirebasePlugin Resume");
         this.IsAppInForegound = true;
     }
 
@@ -548,12 +554,14 @@ public class FirebasePlugin extends CordovaPlugin {
     @Override
     public void onStop() {
         super.onStop();
+        Log.d(TAG, "FirebasePlugin Stop");
         this.IsAppInForegound = false;
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        Log.d(TAG, "FirebasePlugin Destroy");
         this.IsAppInForegound = false;
     }
 }
