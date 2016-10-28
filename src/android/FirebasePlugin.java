@@ -188,17 +188,14 @@ public class FirebasePlugin extends CordovaPlugin {
     }
 
     public static void sendNotification(Bundle bundle) {
-        CallbackContext callbackContext = null;
-        if(FirebasePlugin.notificationCallbackContext == null || (callbackContext = FirebasePlugin.notificationCallbackContext.get()) == null) {
+        
+        if(FirebasePlugin.notificationCallbackContext == null) {
             //No callback for notification, add to cache...
             Log.d("FirebasePlugin", "Send `CallbackContext` is null, adding notification to cache");
-            if(FirebasePlugin.pendingNotifications == null){
-                FirebasePlugin.pendingNotifications = new ArrayList<Bundle>();
-            }            
-            pendingNotifications.add(bundle);
+            addNoteToCache(bundle);
             return;
         }
-        
+        CallbackContext callbackContext = FirebasePlugin.notificationCallbackContext.get();
         if (callbackContext != null && bundle != null) {
             JSONObject json = new JSONObject();
             Set<String> keys = bundle.keySet();
@@ -214,6 +211,9 @@ public class FirebasePlugin extends CordovaPlugin {
             PluginResult pluginresult = new PluginResult(PluginResult.Status.OK, json);
             pluginresult.setKeepCallback(true);
             callbackContext.sendPluginResult(pluginresult);
+        } else if (bundle != null){
+            //fallback if callback cache couldnt be called.
+            addNoteToCache(bundle);
         }
     }
 
@@ -250,6 +250,12 @@ public class FirebasePlugin extends CordovaPlugin {
                 }
             }
         });
+    }
+    private static void addNoteToCache(Bundle bundle){
+        if(FirebasePlugin.pendingNotifications == null){
+            FirebasePlugin.pendingNotifications = new ArrayList<Bundle>();
+        }            
+        FirebasePlugin.pendingNotifications.add(bundle);
     }
 
     private void getToken(final CallbackContext callbackContext) {
