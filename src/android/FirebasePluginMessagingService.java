@@ -79,7 +79,7 @@ public class FirebasePluginMessagingService extends FirebaseMessagingService {
             for (String key : data.keySet()) {
                 bundle.putString(key, data.get(key));
             }
-            FirebasePlugin.receiveNotification(bundle)
+            FirebasePlugin.receiveNotification(bundle);
         }
         
     }
