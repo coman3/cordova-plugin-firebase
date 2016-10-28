@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.ArrayList;
 
 import me.leolin.shortcutbadger.ShortcutBadger;
 
@@ -48,6 +49,7 @@ public class FirebasePlugin extends CordovaPlugin {
     private static WeakReference<CallbackContext> notificationReceivedCallbackContext;
     private static WeakReference<CallbackContext> tokenRefreshCallbackContext;
 
+    private static ArrayList<Bundle> pendingNotifications;
     @Override
     protected void pluginInitialize() {
         final Context context = this.cordova.getActivity().getApplicationContext();
@@ -128,9 +130,17 @@ public class FirebasePlugin extends CordovaPlugin {
 
     private void onNotificationOpen(final CallbackContext callbackContext) {
         FirebasePlugin.notificationCallbackContext = new WeakReference<CallbackContext>(callbackContext);
-        // TODO: send buffered notifications here. see iOS implementation
+        if(FirebasePlugin.pendingNotifications != null){
+            //looks like we have cache, lets notify the application of each notification in the cache
+            for (Bundle bundle : FirebasePlugin.pendingNotifications) {
+                FirebasePlugin.sendNotification(bundle);
+            }
+            //okay, application knows about all cached notifications, clear the cache.
+            FirebasePlugin.pendingNotifications = null;
+        }
     }
     private void onNotificationReceived(final CallbackContext callbackContext) {
+        //no need to check for cache, all cached notifications should have been called in `onNotificationOpen`.
         FirebasePlugin.notificationReceivedCallbackContext = new WeakReference<CallbackContext>(callbackContext);
     }
 
@@ -154,6 +164,7 @@ public class FirebasePlugin extends CordovaPlugin {
 
     public static void receiveNotification(Bundle bundle) {
         if(FirebasePlugin.notificationReceivedCallbackContext == null) {
+            //No need for cache, as the app should already be initialized.
             return;  
         }
         final CallbackContext callbackContext = FirebasePlugin.notificationReceivedCallbackContext.get();
@@ -177,7 +188,12 @@ public class FirebasePlugin extends CordovaPlugin {
 
     public static void sendNotification(Bundle bundle) {
         if(FirebasePlugin.notificationCallbackContext == null) {
-            return;  // TODO: buffer notifications here. see iOS implementation
+            //No callback for notification, add to cache...
+            if(FirebasePlugin.pendingNotifications == null){
+                FirebasePlugin.pendingNotifications = new ArrayList<Bundle>();
+            }
+            pendingNotifications.add(bundle);
+            return;
         }
         final CallbackContext callbackContext = FirebasePlugin.notificationCallbackContext.get();
         if (callbackContext != null && bundle != null) {
