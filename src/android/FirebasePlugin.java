@@ -188,10 +188,10 @@ public class FirebasePlugin extends CordovaPlugin {
     }
 
     public static void sendNotification(Bundle bundle) {
-        final CallbackContext callbackContext = null;
+        CallbackContext callbackContext = null;
         if(FirebasePlugin.notificationCallbackContext == null || (callbackContext = FirebasePlugin.notificationCallbackContext.get()) == null) {
             //No callback for notification, add to cache...
-            Log.d(TAG, "Send `CallbackContext` is null, adding notification to cache");
+            Log.d("FirebasePlugin", "Send `CallbackContext` is null, adding notification to cache");
             if(FirebasePlugin.pendingNotifications == null){
                 FirebasePlugin.pendingNotifications = new ArrayList<Bundle>();
             }            
@@ -232,7 +232,7 @@ public class FirebasePlugin extends CordovaPlugin {
     @Override
     public void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        Log.d(TAG, "FirebasePlugin NewIntent");
+        Log.d("FirebasePlugin", "FirebasePlugin NewIntent");
         this.IsAppInForegound = true;
         FirebasePlugin.sendNotification(intent.getExtras());
 
