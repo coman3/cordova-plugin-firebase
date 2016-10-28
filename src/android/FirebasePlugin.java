@@ -213,7 +213,9 @@ public class FirebasePlugin extends CordovaPlugin {
     @Override
     public void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
+        this.IsAppInForegound = true;
         FirebasePlugin.sendNotification(intent.getExtras());
+
     }
 
     // DEPRECTED - alias of getToken
@@ -512,30 +514,30 @@ public class FirebasePlugin extends CordovaPlugin {
 
     @Override
     public void onPause(boolean multitasking) {
+        super.onPause(multitasking);
         this.IsAppInForegound = false;
     }
     @Override
     public void onResume(boolean multitasking) {
+        super.onResume(multitasking);
         this.IsAppInForegound = true;
     }
 
     @Override
     public void onStart() {
+        super.onStart();
         this.IsAppInForegound = true;
     }
 
     @Override
     public void onStop() {
+        super.onStop();
         this.IsAppInForegound = false;
     }
 
     @Override
-    public void onNewIntent(Intent intent) {
-        this.IsAppInForegound = true;
-    }
-
-    @Override
     public void onDestroy() {
+        super.onDestroy();
         this.IsAppInForegound = false;
     }
 }

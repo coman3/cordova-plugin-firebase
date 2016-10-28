@@ -115,22 +115,4 @@ public class FirebasePluginMessagingService extends FirebaseMessagingService {
 
         notificationManager.notify(id.hashCode(), notificationBuilder.build());
     }
-
-    
-    private boolean isAppOnForeground(Context context) {
-        ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-        List<RunningAppProcessInfo> appProcesses = activityManager.getRunningAppProcesses();
-        if (appProcesses == null) {
-            return false;
-        }
-        final String packageName = context.getPackageName();
-        for (RunningAppProcessInfo appProcess : appProcesses) {
-            if (appProcess.importance == RunningAppProcessInfo.IMPORTANCE_FOREGROUND && appProcess.processName.equals(packageName)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-
 }
