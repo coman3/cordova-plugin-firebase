@@ -66,9 +66,22 @@ public class FirebasePluginMessagingService extends FirebaseMessagingService {
         Log.d(TAG, "Notification Message Body/Text: " + text);
 
         // TODO: Add option to developer to configure if show notification when app on foreground
-        if (!TextUtils.isEmpty(text) || !TextUtils.isEmpty(title)) {
-            sendNotification(id, title, text, remoteMessage.getData());
+        if(FirebasePlugin == null || !FirebasePlugin.IsAppInForegound){
+            if (!TextUtils.isEmpty(text) || !TextUtils.isEmpty(title)) {
+                sendNotification(id, title, text, remoteMessage.getData());
+            }
+        }else{
+            Bundle bundle = new Bundle();
+            bundle.putString("title", title);
+            bundle.putString("text", text);
+            bundle.putInt("id", id);
+            Bundle dataBundle = new Bundle();
+            for (String key : data.keySet()) {
+                bundle.putString(key, data.get(key));
+            }
+            FirebasePlugin.receiveNotification(bundle)
         }
+        
     }
 
     private void sendNotification(String id, String title, String messageBody, Map<String, String> data) {
@@ -101,6 +114,22 @@ public class FirebasePluginMessagingService extends FirebaseMessagingService {
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         notificationManager.notify(id.hashCode(), notificationBuilder.build());
+    }
+
+    
+    private boolean isAppOnForeground(Context context) {
+        ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        List<RunningAppProcessInfo> appProcesses = activityManager.getRunningAppProcesses();
+        if (appProcesses == null) {
+            return false;
+        }
+        final String packageName = context.getPackageName();
+        for (RunningAppProcessInfo appProcess : appProcesses) {
+            if (appProcess.importance == RunningAppProcessInfo.IMPORTANCE_FOREGROUND && appProcess.processName.equals(packageName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 

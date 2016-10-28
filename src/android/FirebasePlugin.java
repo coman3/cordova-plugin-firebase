@@ -38,11 +38,14 @@ import me.leolin.shortcutbadger.ShortcutBadger;
 
 public class FirebasePlugin extends CordovaPlugin {
 
+    public static Boolean IsAppInForegound = false;
+
     private FirebaseAnalytics mFirebaseAnalytics;
     private final String TAG = "FirebasePlugin";
     protected static final String KEY = "badge";
 
     private static WeakReference<CallbackContext> notificationCallbackContext;
+    private static WeakReference<CallbackContext> notificationReceivedCallbackContext;
     private static WeakReference<CallbackContext> tokenRefreshCallbackContext;
 
     @Override
@@ -78,6 +81,9 @@ public class FirebasePlugin extends CordovaPlugin {
             return true;
         } else if (action.equals("onNotificationOpen")) {
             this.onNotificationOpen(callbackContext);
+            return true;
+        } else if (action.equals("onNotificationReceived")) {
+            this.onNotificationReceived(callbackContext);
             return true;
         } else if (action.equals("onTokenRefresh")) {
             this.onTokenRefresh(callbackContext);
@@ -124,6 +130,9 @@ public class FirebasePlugin extends CordovaPlugin {
         FirebasePlugin.notificationCallbackContext = new WeakReference<CallbackContext>(callbackContext);
         // TODO: send buffered notifications here. see iOS implementation
     }
+    private void onNotificationReceived(final CallbackContext callbackContext) {
+        FirebasePlugin.notificationReceivedCallbackContext = new WeakReference<CallbackContext>(callbackContext);
+    }
 
     private void onTokenRefresh(final CallbackContext callbackContext) {
         FirebasePlugin.tokenRefreshCallbackContext = new WeakReference<CallbackContext>(callbackContext);
@@ -141,6 +150,29 @@ public class FirebasePlugin extends CordovaPlugin {
                 }
             }
         });
+    }
+
+    public static void receiveNotification(Bundle bundle) {
+        if(FirebasePlugin.notificationReceivedCallbackContext == null) {
+            return;  
+        }
+        final CallbackContext callbackContext = FirebasePlugin.notificationReceivedCallbackContext.get();
+        if (callbackContext != null && bundle != null) {
+            JSONObject json = new JSONObject();
+            Set<String> keys = bundle.keySet();
+            for (String key : keys) {
+                try {
+                    json.put(key, bundle.get(key));
+                } catch (JSONException e) {
+                    callbackContext.error(e.getMessage());
+                    return;
+                }
+            }
+
+            PluginResult pluginresult = new PluginResult(PluginResult.Status.OK, json);
+            pluginresult.setKeepCallback(true);
+            callbackContext.sendPluginResult(pluginresult);
+        }
     }
 
     public static void sendNotification(Bundle bundle) {
@@ -476,5 +508,34 @@ public class FirebasePlugin extends CordovaPlugin {
             map.put(key, value);
         }
         return map;
+    }
+
+    @Override
+    public void onPause(boolean multitasking) {
+        this.IsAppInForegound = false;
+    }
+    @Override
+    public void onResume(boolean multitasking) {
+        this.IsAppInForegound = true;
+    }
+
+    @Override
+    public void onStart() {
+        this.IsAppInForegound = true;
+    }
+
+    @Override
+    public void onStop() {
+        this.IsAppInForegound = false;
+    }
+
+    @Override
+    public void onNewIntent(Intent intent) {
+        this.IsAppInForegound = true;
+    }
+
+    @Override
+    public void onDestroy() {
+        this.IsAppInForegound = false;
     }
 }
