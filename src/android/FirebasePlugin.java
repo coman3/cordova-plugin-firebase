@@ -129,8 +129,10 @@ public class FirebasePlugin extends CordovaPlugin {
     }
 
     private void onNotificationOpen(final CallbackContext callbackContext) {
+        Log.d(TAG, "Hooking onNotificationOpen");
         FirebasePlugin.notificationCallbackContext = new WeakReference<CallbackContext>(callbackContext);
         if(FirebasePlugin.pendingNotifications != null){
+            Log.d(TAG, "Sending Cached notifications to application..");
             //looks like we have cache, lets notify the application of each notification in the cache
             for (Bundle bundle : FirebasePlugin.pendingNotifications) {
                 FirebasePlugin.sendNotification(bundle);
@@ -140,6 +142,7 @@ public class FirebasePlugin extends CordovaPlugin {
         }
     }
     private void onNotificationReceived(final CallbackContext callbackContext) {
+        Log.d(TAG, "Hooking onNotificationReceived");
         //no need to check for cache, all cached notifications should have been called in `onNotificationOpen`.
         FirebasePlugin.notificationReceivedCallbackContext = new WeakReference<CallbackContext>(callbackContext);
     }
@@ -163,6 +166,7 @@ public class FirebasePlugin extends CordovaPlugin {
     }
 
     public static void receiveNotification(Bundle bundle) {
+        Log.d("FirebasePlugin", "Received Notification");
         if(FirebasePlugin.notificationReceivedCallbackContext == null) {
             //No need for cache, as the app should already be initialized.
             return;  
@@ -188,7 +192,7 @@ public class FirebasePlugin extends CordovaPlugin {
     }
 
     public static void sendNotification(Bundle bundle) {
-        
+        Log.d("FirebasePlugin", "Send / Sent Notification");
         if(FirebasePlugin.notificationCallbackContext == null) {
             //No callback for notification, add to cache...
             Log.d("FirebasePlugin", "Send `CallbackContext` is null, adding notification to cache");
@@ -554,6 +558,7 @@ public class FirebasePlugin extends CordovaPlugin {
     @Override
     public void onStart() {
         super.onStart();
+        Log.d(TAG, "FirebasePlugin Start");
         this.IsAppInForegound = true;
     }
 
