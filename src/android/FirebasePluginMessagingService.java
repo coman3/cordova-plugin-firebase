@@ -66,7 +66,7 @@ public class FirebasePluginMessagingService extends FirebaseMessagingService {
         Log.d(TAG, "Notification Message Body/Text: " + text);
 
         // TODO: Add option to developer to configure if show notification when app on foreground
-        if(FirebasePlugin == null || !FirebasePlugin.IsAppInForegound){
+        if(!FirebasePlugin.IsAppInForegound){
             if (!TextUtils.isEmpty(text) || !TextUtils.isEmpty(title)) {
                 sendNotification(id, title, text, remoteMessage.getData());
             }
@@ -74,8 +74,9 @@ public class FirebasePluginMessagingService extends FirebaseMessagingService {
             Bundle bundle = new Bundle();
             bundle.putString("title", title);
             bundle.putString("text", text);
-            bundle.putInt("id", id);
+            bundle.putString("id", id);
             Bundle dataBundle = new Bundle();
+            Map<String, String> data = remoteMessage.getData();
             for (String key : data.keySet()) {
                 bundle.putString(key, data.get(key));
             }
